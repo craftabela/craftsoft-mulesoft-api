@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="deleteFlow" doc:id="2946aaf7-5bb7-43c4-8dad-e00079c21c44" >
+		<ee:transform doc:name="Transform Message" doc:id="4064cd7b-ab47-4713-957c-c2a3f0890ace" >
+			<ee:variables >
+				<ee:set-variable variableName="id" ><![CDATA[attributes.uriParams.id as Number]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="7032e7be-fc80-48fc-8dbc-fe27c47413c6" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from notes where id=:id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"id": vars.id
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="a5c22aec-3286-439a-9a4a-491039042d13" >
+			<when expression="#[payload.id contains vars.id]">
+				<db:delete doc:name="Delete" doc:id="3a5d5227-cde4-477a-ab05-f1f39d1db7cd" config-ref="Database_Config">
+					<db:sql ><![CDATA[delete from notes where id=:id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"id": vars.id
+}]]]></db:input-parameters>
+				</db:delete>
+				<ee:transform doc:name="Transform Message" doc:id="78dcb5d7-4372-430e-a0a0-d3bc552dbe0e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Note deleted successfully."
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="d9baf57e-ca56-4a0b-b108-f152ab1efba4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "error": "Not Found",
+  "message": "No note found with the given noteId."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

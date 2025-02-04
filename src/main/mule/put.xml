@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="putFlow" doc:id="a6b76cde-66bd-462f-8677-7ed0d748d806" >
+		<ee:transform doc:name="Transform Message" doc:id="381082cc-a9c1-4e1b-9ed2-9f275875f685" >
+			<ee:variables >
+				<ee:set-variable variableName="id" ><![CDATA[attributes.uriParams.id as Number]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="b5bfd9b1-68ea-4a34-bf26-9ab9c8635b83" variableName="input"/>
+		<db:select doc:name="Select" doc:id="dfbe8042-aeb6-4a77-8f6c-1da798a4b11b" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from notes where id=:id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": vars.id
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="49431329-31ba-4c2d-8ada-0b00723b76fe" >
+			<when expression="#[payload.id contains vars.id]">
+				<db:update doc:name="Update" doc:id="63837fee-83bf-4e61-bb3b-03647d56e19e" config-ref="Database_Config">
+					<db:sql ><![CDATA[update notes set title=:title,content=:content where id=:id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"id": vars.id,
+	"title": vars."input".title,
+	"content": vars."input".content
+}]]]></db:input-parameters>
+				</db:update>
+				<db:select doc:name="Select" doc:id="cd238eac-e5d9-41d0-a868-757bb8bf67ef" config-ref="Database_Config">
+					<db:sql ><![CDATA[select * from notes order by updatedAt desc limit 1]]></db:sql>
+				</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="4d218580-895b-404c-b9e5-b020a935ddfc">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Note updated successfully.",
+  updatedAt: payload.updatedAt[0]
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<db:insert doc:name="Insert" doc:id="3b1bfae4-70a7-4b86-9a28-fd87a0b7f64a" config-ref="Database_Config">
+					<db:sql ><![CDATA[insert into notes(title,content) values(:title,:content)]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"title": vars."input".title,
+	"content": vars."input".content
+}]]]></db:input-parameters>
+				</db:insert>
+				<db:select doc:name="Select" doc:id="ed789f4b-2b3a-4068-ad08-fd17bcbf4f09" config-ref="Database_Config">
+					<db:sql ><![CDATA[select * from notes order by createdAt desc limit 1]]></db:sql>
+				</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="e13a20ec-7773-4bae-9156-5fac64eb0a36" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Note created successfully.",
+  createdAt: payload.createdAt[0]
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

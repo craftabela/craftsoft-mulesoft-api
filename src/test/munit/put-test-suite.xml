@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="put-test-suite.xml" />
+	<munit:test name="put-test-suite-putFlowTest" doc:id="f34d8cf1-e730-4e7e-a5a7-e513dae345bc" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="17a1e869-ea57-47af-ae68-a6c32202a0a7">
+				<munit:attributes value="#[{ method : 'PUT', uriParams : { id : '103'}}]" />
+			</munit:set-event>
+			<ee:transform doc:name="Transform Message" doc:id="5db69f65-1c1b-4ac8-b0de-694b1d43ad2a" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+    "title": "Meeting Notes",
+    "content": "Discuss project updates and milestones."
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to putFlow" doc:id="738b9aa2-fecc-4ca1-8765-19c2c11d3ae5" name="putFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="39498b9c-af99-45fe-8bf0-110cbb2d2e3e" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

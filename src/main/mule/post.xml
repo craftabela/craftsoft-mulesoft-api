@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
+	<flow name="postFlow" doc:id="85b1f95a-eb38-411d-8a27-c36b5b275816" >
+		<db:insert doc:name="Insert" doc:id="c8fa7685-9e17-4c6f-8fed-793d455037c5" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into notes(title,content) values(:title,:content)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"title": payload.title,
+	"content": payload.content
+}]]]></db:input-parameters>
+		</db:insert>
+		<db:select doc:name="Select" doc:id="eb0ecffa-d227-46d9-a9b2-89c222837b4c" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from notes order by createdAt desc limit 1]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="8432a532-3756-42da-996d-86e9c7fb9c54" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Note created successfully.",
+  createdAt: payload.createdAt[0]
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

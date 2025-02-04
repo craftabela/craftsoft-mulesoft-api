@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+
+    <apikit:config name="craftsoft-mulesoft-api-config" api="resource::0fbb5fb7-6af3-4c6e-b3c3-56f719d10019:craftsoft-mulesoft-api:1.0.3:raml:zip:craftsoft-mulesoft-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus"/>
+    <flow name="craftsoft-mulesoft-api-main">
+        <http:listener config-ref="craftsoft-mulesoft-api-httpListenerConfig" path="/api/*">
+            
+            <reconnect frequency="25000" count="5" />
+			<http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+		<apikit:router config-ref="craftsoft-mulesoft-api-config" />
+        
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <set-variable value="400" doc:name="Set Variable" doc:id="90fc4e33-ed66-4080-ac85-6cfa11f4b3b8" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <set-variable value="404" doc:name="Set Variable" doc:id="e3d2efd7-9c8b-4f9b-bc84-5c0f48d3c928" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <set-variable value="405" doc:name="Set Variable" doc:id="049a0aa0-fa6c-45fd-95e8-6e09c3655088" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <set-variable value="406" doc:name="Set Variable" doc:id="726b36fb-714d-4582-b73f-eedc33b4cf2b" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <set-variable value="415" doc:name="Set Variable" doc:id="224f8d25-f139-4e48-bca3-dbec07d20c3f" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <set-variable value="501" doc:name="Set Variable" doc:id="63bff2d9-462a-49c7-b0c1-1977cbc9f142" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="f5d2e294-20f2-4a66-a6e7-8fbed96543d0" type="DB:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="839eff0c-aa82-446b-8853-407d53014fea" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Database is currently unavailable. Please try again later."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate2" doc:id="3c058380-c644-4890-877c-f265d96799e9" type="DB:BAD_SQL_SYNTAX" >
+				<set-variable value="400" doc:name="Set Variable" doc:id="c395cc38-f3f3-418e-a73b-6586123faba3" variableName="httpStatus"/>
+				<ee:transform doc:name="Transform Message" doc:id="c8b61218-f45f-4cf4-8434-68c5e81fac10" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"message": "Invalid SQL Syntax! Please check your query."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate3" doc:id="7c343921-b2ca-4f91-bc81-bc5438699238" type="DB:QUERY_EXECUTION" >
+				<set-variable value="400" doc:name="Set Variable" doc:id="a303fc02-0e43-4e5e-b1a6-f114133ea122" variableName="httpStatus" />
+				<ee:transform doc:name="Transform Message" doc:id="255b24b0-10b6-448d-94a0-7c0266878fba" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"message": "SQL execution failed due to invalid query."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+        </error-handler>
+    </flow>
+	<flow name="craftsoft-mulesoft-api-console">
+        <http:listener config-ref="craftsoft-mulesoft-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="craftsoft-mulesoft-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <set-variable value="404" doc:name="Set Variable" doc:id="31a88313-e133-4047-be0d-1402a80b4411" variableName="httpStatus" />
+				<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\notes\(id):application\json:craftsoft-mulesoft-api-config">
+		<flow-ref doc:name="Flow Reference" doc:id="7a1b59c5-974f-49a9-92e7-b67243ce9537" name="putFlow"/>
+    </flow>
+    <flow name="delete:\notes\(id):craftsoft-mulesoft-api-config">
+		<flow-ref doc:name="Flow Reference" doc:id="c37bc97e-d316-4b40-ad9b-9e6ec2a3ab66" name="deleteFlow"/>
+    </flow>
+    <flow name="get:\notes:craftsoft-mulesoft-api-config">
+		<flow-ref doc:name="Flow Reference" doc:id="dade290a-3537-44ce-ba59-7e6e95083c0e" name="getFlow"/>
+    </flow>
+    <flow name="get:\notes\(id):craftsoft-mulesoft-api-config">
+		<flow-ref doc:name="Flow Reference" doc:id="5a835745-28cd-4a6f-8f7c-bf847df986de" name="getByIdFlow"/>
+    </flow>
+    <flow name="post:\notes:application\json:craftsoft-mulesoft-api-config">
+		<flow-ref doc:name="Flow Reference" doc:id="3dcb3946-5b02-4f08-a477-e28474ca58a8" name="postFlow"/>
+    </flow>
+</mule>

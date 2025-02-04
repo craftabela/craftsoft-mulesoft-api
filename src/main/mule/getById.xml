@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="getByIdFlow" doc:id="fee06142-d628-4d9a-b7cd-2d550af10f59" >
+		<ee:transform doc:name="Transform Message" doc:id="f4f19d28-7e07-41fa-971a-96e575c791ee" >
+			<ee:variables >
+				<ee:set-variable variableName="id" ><![CDATA[attributes.uriParams.id as Number]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="8189fdff-819b-40ac-a1fd-196f5da30ceb" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from notes where id=:id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"id": vars.id
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="f2807388-043a-4342-a252-e64a12128ea8" >
+			<when expression="#[payload.id contains vars.id]">
+				<db:select doc:name="Select" doc:id="31d387b4-7ed6-4b75-aafc-c3dd1fd62481" config-ref="Database_Config">
+					<db:sql><![CDATA[select * from notes where id=:id]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	"id": vars.id
+}]]]></db:input-parameters>
+				</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="4fc7e0d5-52e6-40dd-bd64-9b7fb1033527" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map((val,key) -> {
+  id: val.id,
+  title: val.title,
+  content: val.content,
+  createdAt: val.createdAt,
+  updatedAt: val.updatedAt
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="76b14048-23c1-4d24-bbc3-ba428e0790e7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "error": "Not Found",
+  "message": "No note found with the given noteId."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
