@@ -108,7 +108,7 @@ output application/json
 output application/json
 ---
 {
-	"message": "Database is currently unavailable. Please try again later."
+	"message": "Database connection failed. Please check your DB settings."
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
