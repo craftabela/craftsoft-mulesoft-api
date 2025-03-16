@@ -7,18 +7,18 @@
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
-	<munit:config name="delete-test-suite.xml" />
-	<munit:test name="delete-test-suite-deleteFlowTest" doc:id="d5edfbe7-cae7-4db1-ab2d-f9b626c4126c" description="Test">
-		<munit:behavior >
-			<munit:set-event doc:name="Set Event" doc:id="86d0240f-4698-4d99-9985-6dd7cabd5b11">
-				<munit:attributes value="#[{ method : 'DELETE', uriParams : { id : '103'}}]" />
+	<munit:config name="craftsoft-mulesoft-api-test-suite.xml" />
+	<munit:test name="craftsoft-mulesoft-api-test-suite-craftsoft-mulesoft-api-mainTest" doc:id="4d01f1cf-5868-4e95-881c-3959f57ae413" description="Test">
+		<munit:behavior>
+			<munit:set-event doc:name="Set Event" doc:id="6c70ada5-ccb7-4fa3-8c04-0f038841b4d9" >
+				<munit:attributes value="#['Test munit']" />
 			</munit:set-event>
 		</munit:behavior>
 		<munit:execution >
-			<flow-ref doc:name="Flow-ref to deleteFlow" doc:id="0a3ecffe-1209-4a51-8ab0-efec9589fec8" name="deleteFlow"/>
+			<flow-ref doc:name="Flow-ref to craftsoft-mulesoft-api-main" doc:id="7a4c14f9-687c-4c04-be84-59ff026290fb" name="craftsoft-mulesoft-api-main"/>
 		</munit:execution>
-		<munit:validation >
-			<munit-tools:assert-that doc:name="Assert that" doc:id="0c8b5d08-f63d-4fad-a070-046580df4de3" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		<munit:validation>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="75f19bf4-80ed-45e9-b599-f32931b36d20" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
 		</munit:validation>
 	</munit:test>
 

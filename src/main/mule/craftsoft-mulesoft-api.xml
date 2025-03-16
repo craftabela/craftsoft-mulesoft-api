@@ -102,6 +102,7 @@ output application/json
                 </ee:transform>
             </on-error-propagate>
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="f5d2e294-20f2-4a66-a6e7-8fbed96543d0" type="DB:CONNECTIVITY" >
+				<set-variable value="503" doc:name="Set Variable" doc:id="7251586d-2998-4a18-b5c3-6fe7b0452f78" variableName="httpStatus"/>
 				<ee:transform doc:name="Transform Message" doc:id="839eff0c-aa82-446b-8853-407d53014fea" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
